@@ -20,5 +20,5 @@ flutter:
   plugin:
     platforms:
       android:
-	package: com.rythenglyth.shinyblue
+        package: com.rythenglyth.flutter_shiny_blue
         pluginClass: FlutterShinyBluePlugin

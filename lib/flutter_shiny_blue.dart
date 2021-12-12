@@ -5,13 +5,60 @@
 
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'bluetooth_state.dart';
 
 class FlutterShinyBlue {
-  static const MethodChannel _channel = MethodChannel('flutter_shiny_blue');
+  static const bluetoothPlatform =
+      MethodChannel('com.rythenglyth.flutter_shiny_blue/bluetooth');
 
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  static FlutterShinyBlue _instance = FlutterShinyBlue();
+
+  static FlutterShinyBlue get instance => _instance;
+
+  //methods
+
+  Future<bool> doesDeviceSupportBluetooth() async {
+    final bool does =
+        await bluetoothPlatform.invokeMethod('doesDeviceSupportBluetooth');
+    return does;
+  }
+
+  Future<BluetoothState> getBluetoothState() async {
+    final int state = await bluetoothPlatform.invokeMethod('getBluetoothState');
+    return BluetoothState.fromValue(state);
+  }
+
+  Future<void> enableBluetooth() async {
+    await bluetoothPlatform.invokeMethod('enableBluetooth');
+  }
+
+  //listener
+
+  static const EventChannel _stateChannel =
+      EventChannel('com.rythenglyth.flutter_shiny_blue/bluetooth_state');
+
+  Stream<BluetoothState> onStateChanged() => _stateChannel
+      .receiveBroadcastStream()
+      .map((val) => BluetoothState.fromValue(val));
+}
+
+class BluetoothAdapter extends ChangeNotifier {
+  static BluetoothAdapter _instance = BluetoothAdapter();
+
+  static BluetoothAdapter get instance => _instance;
+
+  BluetoothState state = BluetoothState.UNKNOWN;
+
+  BluetoothAdapter() {
+    FlutterShinyBlue.instance.getBluetoothState().then((state) {
+      this.state = state;
+      notifyListeners();
+    });
+    FlutterShinyBlue.instance.onStateChanged().listen((state) {
+      this.state = state;
+      notifyListeners();
+    });
   }
 }
