@@ -34,6 +34,12 @@ class FlutterShinyBlue {
     await bluetoothPlatform.invokeMethod('enableBluetooth');
   }
 
+  Future<bool> startDiscovery() async {
+    final bool succeeded =
+        await bluetoothPlatform.invokeMethod('startDiscovery');
+    return succeeded;
+  }
+
   //listener
 
   static const EventChannel _stateChannel =
@@ -42,6 +48,12 @@ class FlutterShinyBlue {
   Stream<BluetoothState> onStateChanged() => _stateChannel
       .receiveBroadcastStream()
       .map((val) => BluetoothState.fromValue(val));
+
+  static const EventChannel _deviceFoundChannel =
+      EventChannel('com.rythenglyth.flutter_shiny_blue/bluetooth_deviceFound');
+
+  Stream<dynamic> onDeviceFound() =>
+      _deviceFoundChannel.receiveBroadcastStream();
 }
 
 class BluetoothAdapter extends ChangeNotifier {
@@ -59,6 +71,10 @@ class BluetoothAdapter extends ChangeNotifier {
     FlutterShinyBlue.instance.onStateChanged().listen((state) {
       this.state = state;
       notifyListeners();
+    });
+    FlutterShinyBlue.instance.onDeviceFound().listen((device) {
+      print("asas");
+      print(device);
     });
   }
 }
